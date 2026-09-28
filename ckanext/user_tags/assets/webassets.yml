@@ -1,0 +1,14 @@
+# user_tags-js:
+#   filters: rjsmin
+#   output: ckanext-user_tags/%(version)s-user_tags.js
+#   contents:
+#     - js/user_tags.js
+#   extra:
+#     preload:
+#       - base/main
+
+# user_tags-css:
+#   filters: cssrewrite
+#   output: ckanext-user_tags/%(version)s-user_tags.css
+#   contents:
+#     - css/user_tags.css
