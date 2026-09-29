@@ -24,6 +24,7 @@ def user_create(original_action, context, data_dict):
 
 
 @toolkit.chained_action
+@toolkit.side_effect_free
 def user_show(original_action, context, data_dict):
     result = original_action(context, data_dict)
     result["tag"] = _get_tag(result["id"])
