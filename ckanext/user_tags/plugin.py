@@ -1,3 +1,4 @@
+import ckan.authz as authz
 import ckan.model as model
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
@@ -11,7 +12,13 @@ def _parse_tags(raw):
 def user_update(original_action, context, data_dict):
     raw_tags = data_dict.pop("tags", None)
     result = original_action(context, data_dict)
-    if raw_tags is not None:
+    # Only a sysadmin may set tags. The form field is hidden from everyone
+    # else, but that alone doesn't stop a direct API call from a regular
+    # user editing their own profile (which CKAN always allows) - this
+    # check is the real enforcement, silently ignoring the field otherwise,
+    # matching CKAN's own convention for sysadmin-only fields (plugin_extras'
+    # own ignore_not_sysadmin validator).
+    if raw_tags is not None and authz.is_sysadmin(context.get("user")):
         tags = _parse_tags(raw_tags)
         _save_tags(result["id"], tags)
         result["tags"] = tags
@@ -22,7 +29,7 @@ def user_update(original_action, context, data_dict):
 def user_create(original_action, context, data_dict):
     raw_tags = data_dict.pop("tags", None)
     result = original_action(context, data_dict)
-    if raw_tags is not None:
+    if raw_tags is not None and authz.is_sysadmin(context.get("user")):
         tags = _parse_tags(raw_tags)
         _save_tags(result["id"], tags)
         result["tags"] = tags
