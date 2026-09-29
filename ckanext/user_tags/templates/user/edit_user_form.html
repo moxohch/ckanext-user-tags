@@ -4,6 +4,6 @@
 {% block extra_fields %}
   {{ super() }}
   {% if g.userobj.sysadmin %}
-    {{ form.input('tag', label=_('Tag'), id='field-tag', value=data.tag, error=errors.tag, placeholder=_('ex: interne, partenaire...'), classes=['control-medium']) }}
+    {{ form.input('tags', label=_('Tags'), id='field-tags', value=data.tags|join(', ') if data.tags else '', error=errors.tags, placeholder=_('ex: interne, partenaire'), classes=['control-medium']) }}
   {% endif %}
 {% endblock %}

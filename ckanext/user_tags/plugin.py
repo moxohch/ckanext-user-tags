@@ -3,23 +3,29 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 
 
+def _parse_tags(raw):
+    return [t.strip() for t in raw.split(",") if t.strip()]
+
+
 @toolkit.chained_action
 def user_update(original_action, context, data_dict):
-    tag = data_dict.pop("tag", None)
+    raw_tags = data_dict.pop("tags", None)
     result = original_action(context, data_dict)
-    if tag is not None:
-        _save_tag(result["id"], tag)
-        result["tag"] = tag
+    if raw_tags is not None:
+        tags = _parse_tags(raw_tags)
+        _save_tags(result["id"], tags)
+        result["tags"] = tags
     return result
 
 
 @toolkit.chained_action
 def user_create(original_action, context, data_dict):
-    tag = data_dict.pop("tag", None)
+    raw_tags = data_dict.pop("tags", None)
     result = original_action(context, data_dict)
-    if tag is not None:
-        _save_tag(result["id"], tag)
-        result["tag"] = tag
+    if raw_tags is not None:
+        tags = _parse_tags(raw_tags)
+        _save_tags(result["id"], tags)
+        result["tags"] = tags
     return result
 
 
@@ -27,21 +33,21 @@ def user_create(original_action, context, data_dict):
 @toolkit.side_effect_free
 def user_show(original_action, context, data_dict):
     result = original_action(context, data_dict)
-    result["tag"] = _get_tag(result["id"])
+    result["tags"] = _get_tags(result["id"])
     return result
 
 
-def _save_tag(user_id, tag):
+def _save_tags(user_id, tags):
     user = model.User.get(user_id)
     extras = dict(user.plugin_extras or {})
-    extras["tag"] = tag
+    extras["tags"] = tags
     user.plugin_extras = extras
     user.save()
 
 
-def _get_tag(user_id):
+def _get_tags(user_id):
     user = model.User.get(user_id)
-    return (user.plugin_extras or {}).get("tag", "") if user else ""
+    return (user.plugin_extras or {}).get("tags", []) if user else []
 
 
 class UserTagsPlugin(plugins.SingletonPlugin):
